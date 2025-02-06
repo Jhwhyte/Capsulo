@@ -1,0 +1,1 @@
+print("note taking app with AI summarization")
