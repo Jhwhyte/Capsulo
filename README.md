@@ -4,7 +4,7 @@ A simple and easy note taking app that feelings like sending text messages with 
 
 Getting started:
 1. Clone the repo
-2. Create a virtual env: python -m venv venv
+2. Create a virtual env: ````python -m venv venv````
 3. Activate the env: source venv/Scripts/activate
 4. Once in the env, install the requirements: pip install requiremnets.txt
 5. Create a free hugging face API. Please read this article to get your free API key: https://www.geeksforgeeks.org/how-to-access-huggingface-api-key/
