@@ -1,4 +1,4 @@
-A simple and easy note taking app that feelings like sending text messages with AI summarization
+A simple and easy notetaking app that feels like sending text messages with AI sumarization 
 
 ![image](https://github.com/user-attachments/assets/fd3ac208-fb88-4138-9879-51271e44b6e2)
 
