@@ -1,4 +1,4 @@
-# Ignore dot files
+# Ignore .env file
 .env
 
 # Ignore the venv folder

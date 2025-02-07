@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Note-taking App with AI Summary</title>
+    <style>
+        body {
+            text-align: center; /* Centers content horizontally */
+            margin: 0;
+            padding: 0;
+        }
+        .logo {
+            margin-top: 20px; /* Adds space above the logo */
+        }
+        .note-container {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin: 10px;
+            display: flex;
+            flex-direction: column;
+        }
+        .note-message {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px;
+        }
+        .note-message:hover {
+            background-color: #f0f0f0;
+        }
+        .delete-btn {
+            cursor: pointer;
+            color: red;
+            font-weight: bold;
+        }
+        .summary-container {
+            margin-top: 20px;
+        }
+        .summary-container p {
+            font-size: 1.1em;
+            font-weight: normal;
+        }
+    </style>
+</head>
+<body>
+    <!-- Logo Image -->
+    <img src="https://see.fontimg.com/api/rf5/PVK0B/MGJlOWJhZTJlZjJiNDFjNmIzMjBlODc4ZTdhYjc1NzUub3Rm/Q2Fwc3Vsbw/ankh-sanctuary.png?r=fs&h=65&w=1000&fg=101010&bg=353D4B&tb=1&s=65" />
+
+    <h1>Note-taking App</h1>
+
+    <button id="new-note-btn">+ Create New Note</button>
+    <div id="notes-container">
+        {% for note_id, note in notes.items() %}
+        <div class="note-container" id="note-{{ note_id }}">
+            <h3>Note {{ note_id }}</h3>
+            <div id="messages-{{ note_id }}">
+                {% for msg in note %}
+                <div class="note-message">
+                    <span>{{ msg['timestamp'] }}: {{ msg['message'] }}</span>
+                    <span class="delete-btn" onclick="deleteMessage('{{ note_id }}', {{ loop.index0 }})">X</span>
+                </div>
+                {% endfor %}
+            </div>
+            <input type="text" id="new-message-{{ note_id }}" placeholder="Write something..." onkeydown="checkEnter(event, '{{ note_id }}')" />
+            <button onclick="summarize('{{ note_id }}')">AI Insights</button>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div id="summary-container" class="summary-container" style="display:none;">
+        <h3>AI Insights:</h3>
+        <p id="summary-text"></p>
+    </div>
+
+    <script>
+        document.getElementById("new-note-btn").onclick = function() {
+            fetch('/new_note', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    const noteId = data.note_id;
+                    const noteContainer = document.createElement('div');
+                    noteContainer.classList.add('note-container');
+                    noteContainer.id = `note-${noteId}`;
+                    noteContainer.innerHTML = `
+                        <h3>Note ${noteId}</h3>
+                        <div id="messages-${noteId}"></div>
+                        <input type="text" id="new-message-${noteId}" placeholder="Write something..." onkeydown="checkEnter(event, '${noteId}')" />
+                        <button onclick="summarize('${noteId}')">AI Insights</button>
+                    `;
+                    document.getElementById('notes-container').appendChild(noteContainer);
+                });
+        }
+
+        function checkEnter(event, noteId) {
+            if (event.key === 'Enter') {
+                const messageInput = document.getElementById(`new-message-${noteId}`);
+                const message = messageInput.value;
+                if (message) {
+                    addMessage(noteId, message);
+                    messageInput.value = '';
+                }
+            }
+        }
+
+        function addMessage(noteId, message) {
+            fetch('/add_message', {
+                method: 'POST',
+                body: new URLSearchParams({ note_id: noteId, message: message }),
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const timestamp = data.timestamp;
+                    const messagesContainer = document.getElementById(`messages-${noteId}`);
+                    const messageDiv = document.createElement('div');
+                    messageDiv.classList.add('note-message');
+                    messageDiv.innerHTML = `
+                        <span>${timestamp}: ${message}</span>
+                        <span class="delete-btn" onclick="deleteMessage('${noteId}', ${messagesContainer.children.length})">X</span>
+                    `;
+                    messagesContainer.appendChild(messageDiv);
+                }
+            });
+        }
+
+        function deleteMessage(noteId, messageIndex) {
+            fetch('/delete_message', {
+                method: 'POST',
+                body: new URLSearchParams({ note_id: noteId, message_index: messageIndex }),
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const messagesContainer = document.getElementById(`messages-${noteId}`);
+                    messagesContainer.children[messageIndex].remove();
+                }
+            });
+        }
+
+        function summarize(noteId) {
+            fetch('/summarize', {
+                method: 'POST',
+                body: new URLSearchParams({ note_id: noteId }),
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.summary) {
+                    document.getElementById('summary-text').innerText = data.summary;
+                    document.getElementById('summary-container').style.display = 'block';
+                }
+            });
+        }
+    </script>
+</body>
+</html>
