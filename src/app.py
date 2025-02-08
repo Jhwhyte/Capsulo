@@ -37,7 +37,7 @@ def add_message():
     message = request.form['message']
 
     # Get the current timestamp in a human-readable format
-    timestamp = datetime.datetime.now().strftime('%I:%M:%S %p')
+    timestamp = datetime.datetime.now().strftime('%Y-%m-%d %I:%M:%S %p')
 
     if note_id in notes:
         notes[note_id].append({'message': message, 'timestamp': timestamp})
